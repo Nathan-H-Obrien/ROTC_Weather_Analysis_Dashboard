@@ -211,35 +211,57 @@ def geocode_location(city, state, country="US"):
     }
 
 @st.cache_data(ttl=600)
-def fetch_current_weather(lat, lon):
-    url = "https://api.openweathermap.org/data/2.5/forecast/daily"
-    params = {
+def fetch_current_weather(lat, lon, days=1):
+    url_daily = "https://api.openweathermap.org/data/2.5/forecast/daily"
+    params_daily = {
         "lat": lat,
         "lon": lon,
+        "cnt": days,
         "appid": API_KEY,
         "units": "imperial"
     }
-    resp = requests.get(url, params=params, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
     
-    return {
-        "location": {
-            "name": data.get("name", "Brookings"),
-            "region": "SD",
-            "country": "US",
-            "tz_id": "America/Chicago"
-        },
-        "current": {
-            "temp_f": data["main"]["temp"],
-            "humidity": data["main"]["humidity"],
-            "wind_mph": data["wind"]["speed"],
-            "cloud": data["clouds"]["all"],
-            "condition": {
-                "text": data["weather"][0]["description"].title()
+    try:
+        resp = requests.get(url_daily, params=params_daily, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        forecast_days = []
+        for item in data.get("list", []):
+            dt = datetime.fromtimestamp(item["dt"], tz=timezone.utc)
+            rain_mm = item.get("rain", 0)
+            snow_mm = item.get("snow", 0)
+            
+            forecast_days.append({
+                "date": dt.strftime("%Y-%m-%d"),
+                "day": {
+                    "avgtemp_f": item["temp"]["day"],
+                    "avgtemp_c": f_to_c(item["temp"]["day"]),
+                    "avghumidity": item["humidity"],
+                    "maxwind_mph": item["speed"],
+                    "daily_chance_of_rain": 100 if rain_mm > 0 else 0,
+                    "daily_chance_of_snow": 100 if snow_mm > 0 else 0,
+                    "condition": {
+                        "text": item["weather"][0]["description"].title()
+                    }
+                }
+            })
+        
+        return {
+            "location": {
+                "name": data["city"]["name"],
+                "region": "SD",
+                "country": data["city"]["country"]
+            },
+            "forecast": {
+                "forecastday": forecast_days
             }
         }
-    }
+    
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            return fetch_forecast_hourly_fallback(lat, lon, days)
+        raise
 
 @st.cache_data(ttl=3600)
 def fetch_forecast(lat, lon, days=14):
