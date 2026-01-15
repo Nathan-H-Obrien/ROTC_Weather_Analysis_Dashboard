@@ -517,7 +517,7 @@ def main():
     # TAB 3: Training Planner
     with tab3:
         st.subheader("🎯 Training Date Planner")
-        st.write("Select specific dates to analyze training conditions. Dates within the next 5 days will use forecast data.")
+        st.write("Select specific dates to analyze training conditions. Dates within the next 14 days will use forecast data.")
         
         col1, col2, col3 = st.columns(3)
         dates = []
@@ -593,7 +593,7 @@ def main():
 def analyze_training_dates(dates, location_name, lat, lon, tz_name):
     """Analyze specific training dates"""
     try:
-        fdata = fetch_forecast(lat, lon, days=7)
+        fdata = fetch_forecast(lat, lon, days=14)
         forecast_days = fdata.get("forecast", {}).get("forecastday", [])
     except:
         forecast_days = []
@@ -606,7 +606,7 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
         st.divider()
         st.subheader(f"📅 {target_date.strftime('%Y-%m-%d')}")
         
-        if 0 <= days_from_now <= 5:
+        if 0 <= days_from_now <= 14:
             # Find matching forecast
             found = False
             for day in forecast_days:
@@ -653,7 +653,7 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
                     break
             
             if not found:
-                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 5 days.")
+                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 14 days.")
         else:
             st.warning("⚠️ This date is outside the forecast window. Historical data requires OpenWeatherMap Professional plan. Try dates within the next 5 days.")
 
