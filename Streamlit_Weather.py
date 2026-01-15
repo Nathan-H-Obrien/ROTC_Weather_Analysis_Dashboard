@@ -212,7 +212,7 @@ def geocode_location(city, state, country="US"):
 
 @st.cache_data(ttl=600)
 def fetch_current_weather(lat, lon):
-    url = "https://api.openweathermap.org/data/2.5/forecast/daily"
+    url = "https://api.openweathermap.org/data/2.5/weather"
     params = {
         "lat": lat,
         "lon": lon,
