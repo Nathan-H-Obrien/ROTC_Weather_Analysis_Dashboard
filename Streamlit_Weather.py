@@ -212,7 +212,7 @@ def geocode_location(city, state, country="US"):
 
 @st.cache_data(ttl=600)
 def fetch_current_weather(lat, lon):
-    url = "https://api.openweathermap.org/data/2.5/weather"
+    url = "https://api.openweathermap.org/data/2.5/forecast/daily"
     params = {
         "lat": lat,
         "lon": lon,
@@ -703,11 +703,11 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
                         "PT Uniform": pt_uniform_d
                     })
             
-            st.dataframe(data, use_container_width=True, hide_index=True)
+        st.dataframe(data, use_container_width=True, hide_index=True)
             
             
-            if not found:
-                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
+        if not found:
+            st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
         else:
             st.warning("⚠️ This date is outside the 16-day forecast window.")
 
