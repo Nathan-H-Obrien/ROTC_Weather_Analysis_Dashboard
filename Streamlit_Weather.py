@@ -30,11 +30,6 @@ FORECAST_DAYS = 14
 # Location presets
 LOCATIONS = {
     "Brookings, SD": {"lat": 44.3114, "lon": -96.7984, "tz": "America/Chicago"},
-    "Fort Benning, GA": {"lat": 32.3557, "lon": -84.9489, "tz": "America/New_York"},
-    "Fort Bragg, NC": {"lat": 35.1393, "lon": -79.0064, "tz": "America/New_York"},
-    "Fort Hood, TX": {"lat": 31.1350, "lon": -97.7751, "tz": "America/Chicago"},
-    "Fort Lewis, WA": {"lat": 47.0995, "lon": -122.5618, "tz": "America/Los_Angeles"},
-    "Fort Campbell, KY": {"lat": 36.6584, "lon": -87.4608, "tz": "America/Chicago"},
     "Enter City/State": {"lat": 0, "lon": 0, "tz": "America/Chicago"}
 }
 
