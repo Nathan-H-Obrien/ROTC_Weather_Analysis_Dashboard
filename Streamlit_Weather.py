@@ -243,7 +243,62 @@ def fetch_current_weather(lat, lon):
 
 @st.cache_data(ttl=3600)
 def fetch_forecast(lat, lon, days=14):
-    url = "https://api.openweathermap.org/data/2.5/forecast/daily"
+    """Fetch forecast - tries daily first, falls back to hourly aggregation"""
+    url_daily = "https://api.openweathermap.org/data/2.5/forecast/daily"
+    params_daily = {
+        "lat": lat,
+        "lon": lon,
+        "cnt": days,
+        "appid": API_KEY,
+        "units": "imperial"
+    }
+    
+    try:
+        resp = requests.get(url_daily, params=params_daily, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        forecast_days = []
+        for item in data.get("list", []):
+            dt = datetime.fromtimestamp(item["dt"], tz=timezone.utc)
+            rain_mm = item.get("rain", 0)
+            snow_mm = item.get("snow", 0)
+            
+            forecast_days.append({
+                "date": dt.strftime("%Y-%m-%d"),
+                "day": {
+                    "avgtemp_f": item["temp"]["day"],
+                    "avgtemp_c": f_to_c(item["temp"]["day"]),
+                    "avghumidity": item["humidity"],
+                    "maxwind_mph": item["speed"],
+                    "daily_chance_of_rain": 100 if rain_mm > 0 else 0,
+                    "daily_chance_of_snow": 100 if snow_mm > 0 else 0,
+                    "condition": {
+                        "text": item["weather"][0]["description"].title()
+                    }
+                }
+            })
+        
+        return {
+            "location": {
+                "name": data["city"]["name"],
+                "region": "SD",
+                "country": data["city"]["country"]
+            },
+            "forecast": {
+                "forecastday": forecast_days
+            }
+        }
+    
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            return fetch_forecast_hourly_fallback(lat, lon, days)
+        raise
+    
+@st.cache_data(ttl=3600)
+def fetch_forecast_hourly_fallback(lat, lon, days):
+    """Fallback to 5-day/3-hour forecast and aggregate to daily"""
+    url = "https://api.openweathermap.org/data/2.5/forecast"
     params = {
         "lat": lat,
         "lon": lon,
@@ -307,6 +362,7 @@ def fetch_forecast(lat, lon, days=14):
             "forecastday": forecast_days
         }
     }
+    
 
 def get_status_color(decision_text):
     """Return color based on decision severity"""
