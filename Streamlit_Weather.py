@@ -25,7 +25,7 @@ except Exception:
 # -----------------------
 API_KEY = st.secrets.get("OPENWEATHER_API_KEY", "")
 WBGT_CUTOFF_F = 50
-FORECAST_DAYS = 7
+FORECAST_DAYS = 16  # Developer plan provides 16-day forecast
 
 # Location presets
 LOCATIONS = {
@@ -242,7 +242,7 @@ def fetch_current_weather(lat, lon):
     }
 
 @st.cache_data(ttl=3600)
-def fetch_forecast(lat, lon, days=7):
+def fetch_forecast(lat, lon, days=14):
     url = "https://api.openweathermap.org/data/2.5/forecast"
     params = {
         "lat": lat,
@@ -393,7 +393,7 @@ def main():
         return
     
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Current Conditions", "📅 7-Day Forecast", "🎯 Training Planner", "📋 Weekly Report"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Current Conditions", "📅 16-Day Forecast", "🎯 Training Planner", "📋 Weekly Report"])
     
     # TAB 1: Current Conditions
     with tab1:
@@ -463,7 +463,7 @@ def main():
         else:
             st.success(final_dec)
     
-    # TAB 2: 7-Day Forecast
+    # TAB 2: 16-Day Forecast
     with tab2:
         try:
             fdata = fetch_forecast(lat, lon, days=FORECAST_DAYS)
@@ -517,7 +517,7 @@ def main():
     # TAB 3: Training Planner
     with tab3:
         st.subheader("🎯 Training Date Planner")
-        st.write("Select specific dates to analyze training conditions. Dates within the next 14 days will use forecast data.")
+        st.write("Select specific dates to analyze training conditions. Dates within the next 16 days will use forecast data.")
         
         col1, col2, col3 = st.columns(3)
         dates = []
@@ -606,7 +606,7 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
         st.divider()
         st.subheader(f"📅 {target_date.strftime('%Y-%m-%d')}")
         
-        if 0 <= days_from_now <= 14:
+        if 0 <= days_from_now <= 5:
             # Find matching forecast
             found = False
             for day in forecast_days:
@@ -653,9 +653,9 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
                     break
             
             if not found:
-                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 14 days.")
+                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
         else:
-            st.warning("⚠️ This date is outside the forecast window. Historical data requires OpenWeatherMap Professional plan. Try dates within the next 5 days.")
+            st.warning("⚠️ This date is outside the 16-day forecast window. Historical data is available with your Developer plan - would you like me to add historical weather lookup?")
 
 if __name__ == "__main__":
     main()
