@@ -670,38 +670,38 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
                 if day["date"] == target_date.strftime("%Y-%m-%d"):
                     found = True
                     dday = day["day"]
-                avg_f = dday["avgtemp_f"]
-                avg_c = dday["avgtemp_c"]
-                rh_d = dday.get("avghumidity", 50)
-                wind_max = dday.get("maxwind_mph", 0)
-                cond = dday["condition"]["text"]
-                
-                clouds_pct = max(dday.get("daily_chance_of_rain", 0), dday.get("daily_chance_of_snow", 0))
-                sunny_d = clouds_pct < 30
-                wbgt_c_d, _, _ = approx_wbgt(avg_c, rh_d, sunny_d)
-                wbgt_f_d = c_to_f(wbgt_c_d)
-                wc_d = wind_chill_f(avg_f, wind_max)
-                
-                wbgt_app_d = avg_f > WBGT_CUTOFF_F
-                heat_label_d, heat_num_d = heat_category_from_wbgt_f(wbgt_f_d) if wbgt_app_d else ("Cold", None)
-                
-                precip_level_d, _, precip_override_d = interpret_condition(cond)
-                uniform_d, _ = recommend_uniform_option_a(avg_f, wc_d, heat_num_d, wbgt_app_d, precip_level_d)
-                final_d = final_training_decision(avg_f, wc_d, heat_num_d, wbgt_app_d, precip_override_d, precip_level_d)
-                pt_uniform_d = recommend_pt_uniform(avg_f)
-                
-                data.append({
-                    "Date": day["date"],
-                    "Temp (°F)": f"{avg_f:.1f}",
-                    "RH%": f"{int(rh_d)}",
-                    "Wind (mph)": f"{wind_max:.1f}",
-                    "WBGT (°F)": f"{wbgt_f_d:.1f}",
-                    "Heat Cat": heat_label_d,
-                    "Wind Chill": "N/A" if wc_d is None else f"{wc_d:.1f}",
-                    "Decision": final_d,
-                    "Uniform": uniform_d,
-                    "PT Uniform": pt_uniform_d
-                })
+                    avg_f = dday["avgtemp_f"]
+                    avg_c = dday["avgtemp_c"]
+                    rh_d = dday.get("avghumidity", 50)
+                    wind_max = dday.get("maxwind_mph", 0)
+                    cond = dday["condition"]["text"]
+                    
+                    clouds_pct = max(dday.get("daily_chance_of_rain", 0), dday.get("daily_chance_of_snow", 0))
+                    sunny_d = clouds_pct < 30
+                    wbgt_c_d, _, _ = approx_wbgt(avg_c, rh_d, sunny_d)
+                    wbgt_f_d = c_to_f(wbgt_c_d)
+                    wc_d = wind_chill_f(avg_f, wind_max)
+                    
+                    wbgt_app_d = avg_f > WBGT_CUTOFF_F
+                    heat_label_d, heat_num_d = heat_category_from_wbgt_f(wbgt_f_d) if wbgt_app_d else ("Cold", None)
+                    
+                    precip_level_d, _, precip_override_d = interpret_condition(cond)
+                    uniform_d, _ = recommend_uniform_option_a(avg_f, wc_d, heat_num_d, wbgt_app_d, precip_level_d)
+                    final_d = final_training_decision(avg_f, wc_d, heat_num_d, wbgt_app_d, precip_override_d, precip_level_d)
+                    pt_uniform_d = recommend_pt_uniform(avg_f)
+                    
+                    data.append({
+                        "Date": day["date"],
+                        "Temp (°F)": f"{avg_f:.1f}",
+                        "RH%": f"{int(rh_d)}",
+                        "Wind (mph)": f"{wind_max:.1f}",
+                        "WBGT (°F)": f"{wbgt_f_d:.1f}",
+                        "Heat Cat": heat_label_d,
+                        "Wind Chill": "N/A" if wc_d is None else f"{wc_d:.1f}",
+                        "Decision": final_d,
+                        "Uniform": uniform_d,
+                        "PT Uniform": pt_uniform_d
+                    })
             
             st.dataframe(data, use_container_width=True, hide_index=True)
             
