@@ -243,7 +243,7 @@ def fetch_current_weather(lat, lon):
 
 @st.cache_data(ttl=3600)
 def fetch_forecast(lat, lon, days=14):
-    url = "https://api.openweathermap.org/data/2.5/forecast"
+    url = "https://api.openweathermap.org/data/2.5/forecast/daily"
     params = {
         "lat": lat,
         "lon": lon,
@@ -655,7 +655,7 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
             if not found:
                 st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
         else:
-            st.warning("⚠️ This date is outside the 16-day forecast window. Historical data is available with your Developer plan - would you like me to add historical weather lookup?")
+            st.warning("⚠️ This date is outside the 16-day forecast window.")
 
 if __name__ == "__main__":
     main()
