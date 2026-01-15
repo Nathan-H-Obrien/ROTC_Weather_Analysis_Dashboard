@@ -25,7 +25,7 @@ except Exception:
 # -----------------------
 API_KEY = st.secrets.get("OPENWEATHER_API_KEY", "")
 WBGT_CUTOFF_F = 50
-FORECAST_DAYS = 14
+FORECAST_DAYS = 7
 
 # Location presets
 LOCATIONS = {
@@ -242,7 +242,7 @@ def fetch_current_weather(lat, lon):
     }
 
 @st.cache_data(ttl=3600)
-def fetch_forecast(lat, lon, days=14):
+def fetch_forecast(lat, lon, days=7):
     url = "https://api.openweathermap.org/data/2.5/forecast"
     params = {
         "lat": lat,
@@ -393,7 +393,7 @@ def main():
         return
     
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Current Conditions", "📅 14-Day Forecast", "🎯 Training Planner", "📋 Weekly Report"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Current Conditions", "📅 7-Day Forecast", "🎯 Training Planner", "📋 Weekly Report"])
     
     # TAB 1: Current Conditions
     with tab1:
@@ -463,7 +463,7 @@ def main():
         else:
             st.success(final_dec)
     
-    # TAB 2: 14-Day Forecast
+    # TAB 2: 7-Day Forecast
     with tab2:
         try:
             fdata = fetch_forecast(lat, lon, days=FORECAST_DAYS)
@@ -593,7 +593,7 @@ def main():
 def analyze_training_dates(dates, location_name, lat, lon, tz_name):
     """Analyze specific training dates"""
     try:
-        fdata = fetch_forecast(lat, lon, days=14)
+        fdata = fetch_forecast(lat, lon, days=7)
         forecast_days = fdata.get("forecast", {}).get("forecastday", [])
     except:
         forecast_days = []
