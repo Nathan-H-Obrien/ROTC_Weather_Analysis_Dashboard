@@ -702,13 +702,13 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
                         "Uniform": uniform_d,
                         "PT Uniform": pt_uniform_d
                     })
-        if not found:
-            st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
-        else:
-            st.warning("⚠️ This date is outside the 16-day forecast window.")
+    if not found:
+        st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
+    else:
+        st.warning("⚠️ This date is outside the 16-day forecast window.")
 
             
-        st.dataframe(data, use_container_width=True, hide_index=True)
+    st.dataframe(data, use_container_width=True, hide_index=True)
             
 
 if __name__ == "__main__":
