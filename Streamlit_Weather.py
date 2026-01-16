@@ -378,7 +378,7 @@ def get_status_color(decision_text):
 # Main App
 # -----------------------
 def main():
-    st.title("Training Dashboard")
+    st.title("S2 Dashboard")
     
     # API Key Check
     if not WEATHER_API_KEY:
