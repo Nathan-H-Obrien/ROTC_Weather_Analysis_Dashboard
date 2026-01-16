@@ -10,7 +10,7 @@ Military training weather dashboard with:
  - Precipitation handling
  - OpenWeatherMap API
 """
-
+from newsapi import NewsApiClient
 import streamlit as st
 import requests
 import math
@@ -23,7 +23,8 @@ except Exception:
 # -----------------------
 # CONFIG
 # -----------------------
-API_KEY = st.secrets.get("OPENWEATHER_API_KEY", "")
+WEATHER_API_KEY = st.secrets.get("OPENWEATHER_API_KEY", "")
+NEWS_API_KEY = st.secrets.get("NEWSAPI", "")
 WBGT_CUTOFF_F = 50
 FORECAST_DAYS = 16  # Developer plan provides 16-day forecast
 
@@ -194,7 +195,7 @@ def geocode_location(city, state, country="US"):
     params = {
         "q": f"{city},{state},{country}",
         "limit": 1,
-        "appid": API_KEY
+        "appid": WEATHER_API_KEY
     }
     resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
@@ -216,7 +217,7 @@ def fetch_current_weather(lat, lon):
     params = {
         "lat": lat,
         "lon": lon,
-        "appid": API_KEY,
+        "appid": WEATHER_API_KEY,
         "units": "imperial"
     }
     resp = requests.get(url, params=params, timeout=10)
@@ -249,7 +250,7 @@ def fetch_forecast(lat, lon, days=14):
         "lat": lat,
         "lon": lon,
         "cnt": days,
-        "appid": API_KEY,
+        "appid": WEATHER_API_KEY,
         "units": "imperial"
     }
     
@@ -302,7 +303,7 @@ def fetch_forecast_hourly_fallback(lat, lon, days):
     params = {
         "lat": lat,
         "lon": lon,
-        "appid": API_KEY,
+        "appid": WEATHER_API_KEY,
         "units": "imperial"
     }
     
@@ -377,16 +378,16 @@ def get_status_color(decision_text):
 # Main App
 # -----------------------
 def main():
-    st.title("🌡️ Training Dashboard")
+    st.title("Training Dashboard")
     
     # API Key Check
-    if not API_KEY:
-        st.error("⚠️ OpenWeather API key not configured. Please add OPENWEATHER_API_KEY to your Streamlit secrets.")
+    if not WEATHER_API_KEY:
+        st.error("OpenWeather API key not configured. Please add OPENWEATHER_API_KEY to your Streamlit secrets.")
         st.info("For local development, create `.streamlit/secrets.toml` with:\n```\nOPENWEATHER_API_KEY = \"your_key_here\"\n```")
         st.stop()
     
     # Location selector in sidebar
-    st.sidebar.header("📍 Location Settings")
+    st.sidebar.header("Location Settings")
     location_choice = st.sidebar.selectbox(
         "Select Location",
         options=list(LOCATIONS.keys()),
@@ -398,7 +399,7 @@ def main():
         custom_city = st.sidebar.text_input("City", value="Sioux Falls", help="Enter city name")
         custom_state = st.sidebar.text_input("State (2-letter code)", value="SD", max_chars=2, help="e.g., SD, TX, CA").upper()
         
-        if st.sidebar.button("🔍 Find Location", type="primary"):
+        if st.sidebar.button("Find Location", type="primary"):
             with st.spinner("Looking up coordinates..."):
                 try:
                     geo_data = geocode_location(custom_city, custom_state)
@@ -408,11 +409,11 @@ def main():
                         st.session_state.custom_lon = geo_data["lon"]
                         st.session_state.custom_name = f"{geo_data['name']}, {geo_data['state']}"
                         st.session_state.custom_tz = STATE_TIMEZONES.get(custom_state, "America/Chicago")
-                        st.sidebar.success(f"✅ Found: {st.session_state.custom_name}")
+                        st.sidebar.success(f"Found: {st.session_state.custom_name}")
                     else:
-                        st.sidebar.error(f"❌ Could not find '{custom_city}, {custom_state}'. Please check spelling.")
+                        st.sidebar.error(f"Could not find '{custom_city}, {custom_state}'. Please check spelling.")
                 except Exception as e:
-                    st.sidebar.error(f"❌ Geocoding error: {e}")
+                    st.sidebar.error(f"Geocoding error: {e}")
         
         # Use stored values or defaults
         if hasattr(st.session_state, 'custom_lat'):
@@ -422,7 +423,7 @@ def main():
             tz_name = st.session_state.custom_tz
             st.sidebar.info(f"📍 Using: {location_name}")
         else:
-            st.sidebar.warning("⚠️ Click 'Find Location' to search")
+            st.sidebar.warning("Click 'Find Location' to search")
             # Use default values
             lat, lon = 44.3114, -96.7984
             location_name = "Brookings, SD (default)"
@@ -443,13 +444,13 @@ def main():
         else:
             local_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        st.caption(f"📍 {location_name} • 🕐 {local_time}")
+        st.caption(f"{location_name} • {local_time}")
     except Exception as e:
-        st.error(f"❌ Weather fetch failed: {e}")
+        st.error(f"Weather fetch failed: {e}")
         return
     
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Current Conditions", "📅 16-Day Forecast", "🎯 Training Planner", "📋 Weekly Report"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Current Conditions", "16-Day Forecast", "Training Planner", "Weekly Report", "Current News"])
     
     # TAB 1: Current Conditions
     with tab1:
@@ -491,19 +492,19 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader("🌡️ Heat Analysis")
+            st.subheader("Heat Analysis")
             st.write(f"**WBGT (est.):** {wbgt_f:.1f}°F ({wbgt_c:.1f}°C)")
             st.write(f"**Heat Category:** {heat_label}")
             st.write(f"**Condition:** {weather_text}")
             st.caption(f"_{cond_note}_")
         
         with col2:
-            st.subheader("❄️ Cold Analysis")
+            st.subheader("Cold Analysis")
             st.write(f"**Wind Chill:** {wc_text}")
             
         st.divider()
         
-        st.subheader("👔 Uniform Recommendations")
+        st.subheader("Uniform Recommendations")
         st.info(f"**Duty Uniform:** {uniform}")
         st.success(f"**PT Uniform:** {pt_uniform}")
         
@@ -526,7 +527,7 @@ def main():
             forecast_days = fdata.get("forecast", {}).get("forecastday", [])
             
             for day in forecast_days:
-                with st.expander(f"📅 {day['date']}", expanded=False):
+                with st.expander(f"{day['date']}", expanded=False):
                     dday = day["day"]
                     cond = dday["condition"]["text"]
                     
@@ -572,7 +573,7 @@ def main():
     
     # TAB 3: Training Planner
     with tab3:
-        st.subheader("🎯 Training Date Planner")
+        st.subheader("Training Date Planner")
         st.write("Select specific dates to analyze training conditions. Dates within the next 16 days will use forecast data.")
         
         col1, col2, col3 = st.columns(3)
@@ -599,7 +600,7 @@ def main():
     
     # TAB 4: Weekly Report
     with tab4:
-        st.subheader("📋 Weekly Training Analysis")
+        st.subheader("Weekly Training Analysis")
         
         try:
             fdata = fetch_forecast(lat, lon, days=FORECAST_DAYS)
@@ -646,6 +647,63 @@ def main():
         except Exception as e:
             st.error(f"Forecast fetch failed: {e}")
 
+    with tab5:
+        newsapi = NewsApiClient(api_key=NEWS_API_KEY)
+
+        top_headlines = newsapi.get_top_headlines(sources='politico', language='en')
+
+    # fetch the top news under that category
+    Headlines = top_headlines['articles']
+    newsArticles = []
+    for headline in Headlines:
+        if headline['title'] and headline['urlToImage'] and headline['description'] and headline['url']:
+            newsArticles.append(headline)
+
+    st.subheader('Latest News')
+
+    cols = []
+    cols2 = []
+    match(len(newsArticles)):
+        case 0:
+            st.subheader('No news today! Check back tomorrow.')
+        case 1:
+            cols = st.columns(1, border=True)
+        case 2:
+            cols = st.columns(2, border=True)
+        case 3:
+            cols = st.columns((2, 1, 1), border=True)
+        case 4:
+            cols = st.columns((2, 1, 1), border=True)
+            cols2 = st.columns(1, border=True)
+        case 5:
+            cols = st.columns((2, 1, 1), border=True)
+            cols2 = st.columns(2, border=True)
+        case _:
+            cols = st.columns((2, 1, 1), border=True)
+            cols2 = st.columns((2, 1, 1), border=True)
+
+    for i in range(len(newsArticles)):
+        if i == 6:
+            break
+        if i < 3:
+            with cols[i]:
+                if i == 0:
+                    st.header(newsArticles[i]['title'])
+                else:
+                    st.subheader(newsArticles[i]['title'])
+                st.image(newsArticles[i]['urlToImage'])
+                st.write(newsArticles[i]['description'])
+                st.write(newsArticles[i]['url'])
+        if i >= 3:
+            with cols2[i-3]:
+                if i == 3:
+                    st.header(newsArticles[i]['title'])
+                else:
+                    st.subheader(newsArticles[i]['title'])
+                st.image(newsArticles[i]['urlToImage'])
+                st.write(newsArticles[i]['description'])
+                st.write(newsArticles[i]['url'])
+
 def analyze_training_dates(dates, location_name, lat, lon, tz_name):
     """Analyze specific training dates"""
     try:
@@ -660,7 +718,7 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
         days_from_now = (target_date - today).days
         
         st.divider()
-        st.subheader(f"📅 {target_date.strftime('%Y-%m-%d')}")
+        st.subheader(f"{target_date.strftime('%Y-%m-%d')}")
         
         if 0 <= days_from_now <= 16:
             # Find matching forecast
@@ -707,9 +765,9 @@ def analyze_training_dates(dates, location_name, lat, lon, tz_name):
             
             
             if not found:
-                st.warning("⚠️ Forecast data not available for this date. Try a date within the next 16 days.")
+                st.warning("Forecast data not available for this date. Try a date within the next 16 days.")
         else:
-            st.warning("⚠️ This date is outside the 16-day forecast window.")
+            st.warning("This date is outside the 16-day forecast window.")
 
 if __name__ == "__main__":
     main()
