@@ -448,6 +448,26 @@ def main():
     except Exception as e:
         st.error(f"Weather fetch failed: {e}")
         return
+    footer_html = """
+    <style>
+
+    /* CSS styles for the main footer container */
+    .footer {
+        position: static; /* Fixes the footer to the viewport */
+        left: 0;
+        bottom: 105px;
+        width: 100%;
+        background-color: none; /* Background color of the footer */
+        color: white; /* Text color */
+        text-align: center; /* Centers the content */
+        padding: 10px 0; /* Some padding for better appearance */
+    }
+    </style>
+    <div class="footer">
+        <p>Built in reference to TRADOC 350-29 and AR 670-1</p>
+    </div>
+    """
+    st.markdown(footer_html, unsafe_allow_html=True)
     
     # Tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["Current Conditions", "16-Day Forecast", "Training Planner", "Weekly Report", "Current News"])
