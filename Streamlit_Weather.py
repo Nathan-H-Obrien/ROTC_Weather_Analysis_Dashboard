@@ -31,6 +31,7 @@ FORECAST_DAYS = 16  # Developer plan provides 16-day forecast
 # Location presets
 LOCATIONS = {
     "Brookings, SD": {"lat": 44.3114, "lon": -96.7984, "tz": "America/Chicago"},
+    "Vermillion, SD": {"lat": 42.7794, "lon": -96.9292, "tz": "America/Chicago"},
     "Enter City/State": {"lat": 0, "lon": 0, "tz": "America/Chicago"}
 }
 
